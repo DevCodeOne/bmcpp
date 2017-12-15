@@ -43,6 +43,16 @@ namespace BMCPP
                 DataRegister<Port, ReadWrite, std::byte> out;
                 template<typename L> struct address;
             };
+
+            struct StatusRegister final {
+                enum BitType : uint8_t {
+                    globalInterrupt = 1 << 7
+                };
+
+                StatusRegister() = delete;
+                ControlRegister<StatusRegister, BitType, std::byte> sreg;
+                static inline uintptr_t address = 0x5f;
+            };
         } __attribute__((packed));
 
         template<>
@@ -60,6 +70,7 @@ namespace BMCPP
         {
             inline static constexpr uintptr_t value = 0x29;
         };
+
         template<typename Component, uint8_t N>
         constexpr Component* getAddress()
         {

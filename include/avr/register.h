@@ -62,10 +62,10 @@ struct ControlRegister final {
     [[nodiscard]] inline BitType get() {
         return static_cast<BitType>(hwRegister & static_cast<value_type>(Mask));
     }
-    template <uint8_t Mask>
-    [[nodiscard]] inline BitType get() {
-        return static_cast<BitType>(hwRegister & Mask);
-    }
+    // template <uint8_t Mask>
+    // [[nodiscard]] inline BitType get() {
+    //     return static_cast<BitType>(hwRegister & Mask);
+    // }
     template <BitType F>
     bool inline isSet() {
         return hwRegister & static_cast<value_type>(F);

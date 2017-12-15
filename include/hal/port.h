@@ -27,6 +27,7 @@ namespace BMCPP {
     namespace Hal {
         struct Output {};
         struct Input {};
+        struct StatusRegister {};
 
         template<typename T>
         concept bool isPin() {

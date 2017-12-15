@@ -14,7 +14,7 @@ using namespace BMCPP::Hal;
 
 using LedPin = Pin<Port<BMCPP::AVR::B>, 2>;
 
-using Leds = BMCPP::WS2812B<LedPin, 1>;
+using Leds = BMCPP::WS2812B<LedPin, 21>;
 
 int main() {
     using namespace std::literals;
@@ -23,12 +23,34 @@ int main() {
 
     Leds l;
 
+    for (int i = 0; i < 21; i++) {
+        l[i].red = 0_byte;
+        l[i].green = 0_byte;
+        l[i].blue = 0_byte;
+    }
+
+    int index = 0;
+
     while (true) {
-        l[0].red = std::byte(255);
+        BMCPP::delay(200_ms);
+        int offset = index * 3;
+        for (int i = 0; i < 3; i++) {
+            l[offset + i].red = 0_byte;
+            l[offset + i].green = 0_byte;
+            l[offset + i].blue = 0_byte;
+        }
+        ++index;
+
+        if (index == 7) {
+            index = 0;
+        }
+
+        offset = index * 3;
+        for (int i = 0; i < 3; i++) {
+            l[offset + i].red = 122_byte;
+            l[offset + i].green = 0_byte;
+            l[offset + i].blue = 200_byte;
+        }
         l.show();
-        BMCPP::delay(500_ms);
-        l[0].red = std::byte(0);
-        l.show();
-        BMCPP::delay(250_ms);
     }
 }
