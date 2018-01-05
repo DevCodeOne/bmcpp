@@ -9,6 +9,7 @@
 #include "ws2812b.h"
 
 #include <chrono>
+#include <array>
 
 using namespace BMCPP::Hal;
 

@@ -26,6 +26,7 @@
 
 namespace BMCPP {
 namespace AVR {
+
 struct A {};
 struct B {};
 struct C {};
@@ -46,9 +47,9 @@ struct ATMega328 final {
     struct I2C final {
         I2C() = delete;
 
-        template<typename N>
+        template<size_t N>
         struct address;
-    }
+    };
 
     struct StatusRegister final {
         enum BitType : uint8_t { globalInterrupt = 1 << 7 };
@@ -75,7 +76,7 @@ struct ATMega328::Port::address<D> {
 template<>
 struct ATMega328::I2C::address<0> {
     inline static constexpr uintptr_t value = 0xB8;
-}
+};
 
 template <typename Component, uint8_t N>
 constexpr Component* getAddress() {

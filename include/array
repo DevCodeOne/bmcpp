@@ -1,0 +1,33 @@
+#pragma once
+
+#include <utility>
+
+#include <cstdint>
+
+namespace std {
+
+template <typename T, size_t N>
+struct array {
+    constexpr T &operator[](size_t index) { return m_data[index]; }
+
+    constexpr const T &operator[](size_t index) const { return m_data[index]; }
+
+    constexpr bool empty() { return N == 0; }
+
+    void swap(std::array<T, N> &other) {
+        using std::swap;
+
+        for (size_t i = 0; i < N; ++i) {
+            swap(m_data[i], other[i]);
+        }
+    }
+
+    T m_data[N];
+};
+
+template <typename T, size_t N>
+void swap(std::array<T, N> &lhs, std::array<T, N> &rhs) noexcept {
+    lhs.swap(rhs);
+}
+
+}  // namespace std
