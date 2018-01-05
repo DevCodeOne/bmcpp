@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cstddef>
 
 namespace BMCPP {
@@ -12,11 +13,12 @@ class I2C {
     I2C() = delete;
 
     void write(Address address, uint8_t byte);
-    template<unsigned int N>
-    void write(Address address, std::array<byte, N> buffer);
+    template <unsigned int S>
+    void write(Address address, std::array<std::byte, S> buffer);
     void receive(Address address, uint8_t byte);
-    template<unsigned int N>
-    void receive(Address address, std::array<byte, N> buffer);
+    template <unsigned int S>
+    void receive(Address address, std::array<std::byte, S> buffer);
 };
 
 }  // namespace Hal
+}  // namespace BMCPP

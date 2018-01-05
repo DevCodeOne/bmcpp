@@ -1,6 +1,7 @@
 /*
  * ++C - C++ introduction
- * Copyright (C) 2013, 2014, 2015, 2016, 2017 Wilhelm Meier <wilhelm.meier@hs-kl.de>
+ * Copyright (C) 2013, 2014, 2015, 2016, 2017 Wilhelm Meier
+ <wilhelm.meier@hs-kl.de>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,99 +19,77 @@
 
 #pragma once
 
-#include <cstdint>
 #include <cstddef>
+#include <cstdint>
 
 #include <meta/meta.h>
 
 namespace BMCPP {
-    namespace Hal {
-        struct Output {};
-        struct Input {};
-        struct StatusRegister {};
+namespace Hal {
+struct Output {};
+struct Input {};
+struct StatusRegister {};
 
-        template<typename T>
-        concept bool isPin() {
-            return requires(T t) {
-                typename T::port_type;
-                T::on();
-                T::off();
-                T::number;
-                T::template dir<Output>();
-            };
+template <typename PortName>
+class Port {
+    Port() = delete;
+    static inline constexpr auto port =
+        BMCPP::AVR::getAddress<BMCPP::AVR::ATMega328::Port, PortName>;
+
+   public:
+    typedef PortName portname_type;
+
+    static volatile std::byte& ddr() { return *port()->ddr; }
+    static volatile std::byte& get() { return *port()->out; }
+};
+
+template <typename Port, uint8_t Number>
+class Pin {
+    Pin() = delete;
+    static_assert(Number < 8);
+
+   public:
+    static inline constexpr std::byte mask{1 << Number};
+    static inline constexpr uint8_t number = Number;
+    typedef Port port_type;
+
+    template <typename Dir>
+    static void dir() {
+        //  static_assert(false);
+        if constexpr (std::is_same<Dir, Output>::value) {
+            Port::ddr() |= mask;
+        } else if constexpr (std::is_same<Dir, Input>::value) {
+            Port::ddr() &= ~mask;
+        } else {
+            static_assert(sizeof(Port) == 0, "Only Input or Output allowed");
         }
-
-        template<typename PortName>
-        class Port {
-            Port() = delete;
-            static inline constexpr auto port = BMCPP::AVR::getAddress<BMCPP::AVR::ATMega328::Port, PortName>;
-        public:
-            typedef PortName portname_type;
-
-            static volatile std::byte& ddr() {
-                return *port()->ddr;
-            }
-            static volatile std::byte& get() {
-                return *port()->out;
-            }
-        };
-
-        template<typename Port, uint8_t Number>
-        class Pin {
-            Pin() = delete;
-            static_assert(Number < 8);
-        public:
-            static inline constexpr std::byte mask{1 << Number};
-            static inline constexpr uint8_t number = Number;
-            typedef Port port_type;
-
-            template<typename Dir>
-            static void dir() {
-              //  static_assert(false);
-                if constexpr(std::is_same<Dir, Output>::value) {
-                    Port::ddr() |= mask;
-                }
-                else if constexpr(std::is_same<Dir, Input>::value) {
-                    Port::ddr() &= ~mask;
-                }
-                else {
-                    static_assert(sizeof(Port) == 0, "Only Input or Output allowed");
-                }
-            }
-            static void on() {
-                Port::get() |= mask;
-            }
-            static void off() {
-                Port::get() &= ~mask;
-            }
-        };
-
-        template<typename... Pins>
-        requires (sizeof...(Pins) >= 1) && (sizeof...(Pins) <= 8) &&
-        (std::is_same<typename Meta::front<Meta::List<Pins...>>::port_type, typename Pins::port_type>::value && ...) &&
-        (isPin<Pins>() && ...)
-        class PinSet {
-            PinSet() = delete;
-            static_assert(sizeof...(Pins) >= 1);
-            static_assert(sizeof...(Pins) <= 8);
-
-            using pinList = Meta::List<Pins...>;
-            using firstPin = Meta::front<pinList>;
-            using port_type = typename firstPin::port_type;
-            static_assert((std::is_same<port_type, typename Pins::port_type>::value && ...), "all pins must use the same port");
-
-        public:
-            template<typename Dir>
-            static void dir() {
-                (Pins::template dir<Dir>(), ...);
-            }
-            static void allOn() {
-                (Pins::on(), ...);
-            }
-            static void allOff() {
-                (Pins::off(), ...);
-            }
-        private:
-        };
     }
-}
+    static void on() { Port::get() |= mask; }
+    static void off() { Port::get() &= ~mask; }
+};
+
+template <typename... Pins>
+class PinSet {
+    PinSet() = delete;
+    static_assert(sizeof...(Pins) >= 1);
+    static_assert(sizeof...(Pins) <= 8);
+
+    using pinList = Meta::List<Pins...>;
+    using firstPin = Meta::front<pinList>;
+    using port_type = typename firstPin::port_type;
+    static_assert((std::is_same<port_type, typename Pins::port_type>::value &&
+                   ...),
+                  "all pins must use the same port");
+
+   public:
+    template <typename Dir>
+    static void dir() {
+        (Pins::template dir<Dir>(), ...);
+    }
+    static void allOn() { (Pins::on(), ...); }
+    static void allOff() { (Pins::off(), ...); }
+
+   private:
+};
+}  // namespace Hal
+}  // namespace BMCPP
