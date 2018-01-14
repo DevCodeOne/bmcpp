@@ -6,52 +6,39 @@
 
 #include "hal/port.h"
 
-#include "ws2812b.h"
+#include "ws_segments/display.h"
+#include "ws_segments/ws2812b.h"
 
-#include <chrono>
 #include <array>
+#include <chrono>
 
 using namespace BMCPP::Hal;
 
 using LedPin = Pin<Port<BMCPP::AVR::B>, 2>;
 
-using Leds = BMCPP::WS2812B<LedPin, 21>;
-
 int main() {
-    using namespace std::literals;
+    using namespace BMCPP;
 
-    LedPin::template dir<Output>();
+    Display<LedPin, SevenSegment<3>, SevenSegment<3>, Dots<1>, SevenSegment<3>,
+            SevenSegment<3>>
+        display;
 
-    Leds l;
-
-    for (int i = 0; i < 21; i++) {
-        l[i].red = 0_byte;
-        l[i].green = 0_byte;
-        l[i].blue = 0_byte;
-    }
-
-    int index = 0;
-
+    uint8_t numbers[2]{0, 0};
     while (true) {
-        BMCPP::delay(200_ms);
-        int offset = index * 3;
-        for (int i = 0; i < 3; i++) {
-            l[offset + i].red = 0_byte;
-            l[offset + i].green = 0_byte;
-            l[offset + i].blue = 0_byte;
-        }
-        ++index;
+        using namespace BMCPP::literals;
+        ++numbers[0];
 
-        if (index == 7) {
-            index = 0;
+        if (numbers[0] == 10) {
+            numbers[0] = 0;
+            numbers[1]++;
+            numbers[1] %= 10;
         }
 
-        offset = index * 3;
-        for (int i = 0; i < 3; i++) {
-            l[offset + i].red = 122_byte;
-            l[offset + i].green = 0_byte;
-            l[offset + i].blue = 200_byte;
-        }
-        l.show();
+        display.show(Digit(numbers[1]), Digit(numbers[0]),
+                     (numbers[0] & 1) ? DotsValue::Two : DotsValue::Off,
+                     Digit(numbers[1]), Digit(numbers[0]));
+
+        using namespace std::literals;
+        BMCPP::delay(500_ms);
     }
 }

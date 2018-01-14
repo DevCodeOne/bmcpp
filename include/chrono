@@ -1,6 +1,7 @@
 /*
  * ++C - C++ introduction
- * Copyright (C) 2013, 2014, 2015, 2016, 2017 Wilhelm Meier <wilhelm.meier@hs-kl.de>
+ * Copyright (C) 2013, 2014, 2015, 2016, 2017 Wilhelm Meier
+ <wilhelm.meier@hs-kl.de>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -11,7 +12,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- 
+
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -21,31 +22,31 @@
 #include <cstdint>
 
 namespace std {
-    template<intmax_t Nom, intmax_t Denom>
-    struct ratio {
-        static inline constexpr intmax_t nom = Nom;
-        static inline constexpr intmax_t denom = Denom;
-    };
-    
-    using millis = ratio<1, 1'000>;
-    using micros = ratio<1, 1'000'000>;
-    
-    template<typename Rep, typename Period = ratio<1,1>>
-    struct duration {
-        typedef Rep rep;
-        typedef Period period;
-        const Rep value;  
-    };
-    
-    using milliseconds = duration<uint16_t, millis>;
-    using microseconds = duration<uint16_t, micros>;
-    
-    namespace literals {
-        constexpr milliseconds operator"" _ms(unsigned long long v) {
-            return milliseconds{static_cast<milliseconds::rep>(v)};
-        }
-        constexpr microseconds operator"" _us(unsigned long long v) {
-            return microseconds{static_cast<microseconds::rep>(v)};
-        }
-    }
+template <intmax_t Nom, intmax_t Denom>
+struct ratio {
+    static inline constexpr intmax_t nom = Nom;
+    static inline constexpr intmax_t denom = Denom;
+};
+
+using millis = ratio<1, 1'000>;
+using micros = ratio<1, 1'000'000>;
+
+template <typename Rep, typename Period = ratio<1, 1>>
+struct duration {
+    typedef Rep rep;
+    typedef Period period;
+    const Rep value;
+};
+
+using milliseconds = duration<uint16_t, millis>;
+using microseconds = duration<uint16_t, micros>;
+
+namespace literals {
+constexpr milliseconds operator""_ms(unsigned long long v) {
+    return milliseconds{static_cast<milliseconds::rep>(v)};
 }
+constexpr microseconds operator""_us(unsigned long long v) {
+    return microseconds{static_cast<microseconds::rep>(v)};
+}
+}  // namespace literals
+}  // namespace std

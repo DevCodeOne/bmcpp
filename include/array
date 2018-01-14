@@ -12,6 +12,8 @@ struct array {
 
     constexpr const T &operator[](size_t index) const { return m_data[index]; }
 
+    constexpr size_t size() const { return N; }
+
     constexpr bool empty() { return N == 0; }
 
     void swap(std::array<T, N> &other) {
@@ -21,6 +23,10 @@ struct array {
             swap(m_data[i], other[i]);
         }
     }
+
+    constexpr T *data() { return m_data; }
+
+    constexpr const T *data() const { return m_data; }
 
     T m_data[N];
 };

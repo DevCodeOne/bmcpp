@@ -1,23 +1,24 @@
 #pragma once
 
 #include <avr/interrupt.h>
-#include <hal/port.h>
 #include <avr/scoped_interrupt.h>
+#include <avr/util.h>
+#include <hal/port.h>
 
+#include <array>
+#include <chrono>
 #include <cstdint>
+
+#include "pixel.h"
 
 template <typename T>
 constexpr T clamp_bottom(T value, T min) {
     return value < min ? min : value;
 }
 
+// TODO this has to be a strip there has to be some kind of interface for other
+// classes
 namespace BMCPP {
-struct Pixel final {
-    std::byte green;
-    std::byte blue;
-    std::byte red;
-} __attribute__((packed));
-
 template <typename Pin, size_t NumLeds>
 class WS2812B final {
    public:
@@ -28,12 +29,17 @@ class WS2812B final {
     const Pixel &operator[](size_t index) const { return m_data[index]; }
 
     void clear();
+    // TODO implement
     void brightness(std::byte brightness);
     std::byte brightness() const;
-    void show() const;
+    void show() const { WS2812B<Pin, NumLeds>::template show_data(m_data); }
+
+    template <size_t Size>
+    static void show_data(const std::array<Pixel, Size> &data);
 
     size_t size() const { return NumLeds; }
 
+    // TODO Add frequency types and period types
     static constexpr unsigned int zeropulse = 350;
     static constexpr unsigned int onepulse = 900;
     static constexpr unsigned int totalperiod = zeropulse + onepulse;
@@ -61,7 +67,7 @@ class WS2812B final {
     static_assert(lowtime <= 550, "Clockspeed is too low");
 
    private:
-    Pixel m_data[NumLeds]{std::byte{0}, std::byte{0}, std::byte{0}};
+    std::array<Pixel, NumLeds> m_data;
 };
 
 template <uint8_t wait>
@@ -105,11 +111,17 @@ inline void __attribute__((always_inline)) wait() {
 }
 
 template <typename Pin, size_t NumLeds>
-void WS2812B<Pin, NumLeds>::show() const {
+template <size_t Size>
+void WS2812B<Pin, NumLeds>::show_data(const std::array<Pixel, Size> &data) {
+    using namespace std::literals;
+
+    Pin::template dir<Hal::Output>();
+
     std::byte curbyte, ctr, maskhi, masklo;
 
-    const std::byte *data = reinterpret_cast<const std::byte *>(m_data);
-    size_t data_len = size() * 3;
+    size_t data_len = data.size() * 3;
+    const std::byte *pixel_data =
+        reinterpret_cast<const std::byte *>(data.data());
 
     using Port = typename Pin::port_type;
 
@@ -120,10 +132,11 @@ void WS2812B<Pin, NumLeds>::show() const {
     masklo = Port::get() & ~maskhi;
     maskhi |= Port::get();
 
-    AVR::ScopedInterrupt<AVR::RestoreOldStatus, AVR::InterruptDisable> interrupt;
+    AVR::ScopedInterrupt<AVR::RestoreOldStatus, AVR::InterruptDisable>
+        interrupt;
 
     while (data_len--) {
-        curbyte = *data++;
+        curbyte = *pixel_data++;
 
         asm volatile(
             "       ldi   %0,8  \n\t"

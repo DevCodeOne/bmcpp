@@ -1,0 +1,35 @@
+#pragma once
+
+namespace std {
+
+template <typename... V>
+class tuple {};
+
+template <typename T, typename... V>
+class tuple<T, V...> : tuple<V...> {
+   public:
+    static inline constexpr size_t size = sizeof...(V) + 1;
+
+    constexpr tuple(T t, V... v) : tuple<V...>(v...), m_value(t) {}
+    constexpr tuple() : tuple<V...>() {}
+
+    template <size_t N>
+    constexpr auto &get() {
+        static_assert(N < size);
+        if constexpr (N == 0) {
+            return m_value;
+        } else {
+            return tuple<V...>::template get<N - 1>();
+        }
+    }
+
+   private:
+    T m_value;
+};
+
+template<typename ... Values>
+auto make_tuple(Values ... values) {
+    return std::tuple<Values ...>(values ...);
+}
+
+}  // namespace std
