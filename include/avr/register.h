@@ -54,9 +54,16 @@ struct ControlRegister final {
     void inline add() {
         hwRegister |= static_cast<value_type>(F);
     }
-    template <BitType F>
+
+    template <BitType... F>
     void inline clear() {
-        hwRegister &= ~static_cast<value_type>(F);
+        hwRegister &= (~static_cast<value_type>(F) & ...);
+    }
+
+    template <typename... T>
+    void inline clear(T... v) {
+        static_assert((std::is_same<T, BitType>::value & ...));
+        hwRegister &= (~static_cast<value_type>(v) & ...);
     }
     template <BitType Mask>
     [[nodiscard]] inline BitType get() {
@@ -68,7 +75,7 @@ struct ControlRegister final {
     // }
     template <BitType F>
     bool inline isSet() {
-        return hwRegister & static_cast<value_type>(F);
+        return (bool) (hwRegister & static_cast<value_type>(F));
     }
     [[nodiscard]] value_type inline raw() { return hwRegister; }
     [[nodiscard]] BitType inline value() {
@@ -78,9 +85,11 @@ struct ControlRegister final {
    private:
     volatile value_type hwRegister;
 };
+
 template <typename Component, typename Mode = UnUsed,
           typename ValueType = std::byte, ValueType mask = ValueType{0xff}>
 struct DataRegister;  // <> Unvollständige Deklaration des allg. Templates
+
 template <typename Component, typename ValueType, ValueType mask>
 struct DataRegister<Component, UnUsed, ValueType, mask>
     final  // <> Partielle Spezialisierung für `UnUsed`
@@ -137,7 +146,8 @@ struct DataRegister<Component, ReadWrite, ValueType, mask>
     {
         return hwRegister;
     }
-    // [[nodiscard]] inline value_type operator*() const  // <> Wie bei der _read-only_-Variante
+    // [[nodiscard]] inline value_type operator*() const  // <> Wie bei der
+    // _read-only_-Variante
     // {
     //     return hwRegister & mask;
     // }

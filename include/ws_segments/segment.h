@@ -18,7 +18,7 @@ class Digit {
     uint8_t m_number;
 };
 
-enum struct DotsValue { Off, One, Two };
+enum struct ColonValue { Off, One, Two };
 
 bool operator==(const Digit &lhs, const uint8_t &rhs) {
     return lhs.number() == rhs;
@@ -65,14 +65,14 @@ class Segment<2, Leds_Per_Segment> {
 
     template <size_t Size>
     size_t draw_digit(std::array<Pixel, Size> &data, size_t offset) const;
-    void set(const DotsValue &value);
+    void set(const ColonValue &value);
 
    private:
-    DotsValue m_value;
+    ColonValue m_value;
 };
 
 template <uint8_t Leds_Per_Segment>
-using Dots = Segment<2, Leds_Per_Segment>;
+using Colon = Segment<2, Leds_Per_Segment>;
 
 template <uint8_t Leds_Per_Segment>
 using SevenSegment = Segment<7, Leds_Per_Segment>;
@@ -155,7 +155,7 @@ size_t Segment<2, Leds_Per_Segment>::draw_digit(std::array<Pixel, Size> &data,
 }
 
 template <uint8_t Leds_Per_Segment>
-void Segment<2, Leds_Per_Segment>::set(const DotsValue &value) {
+void Segment<2, Leds_Per_Segment>::set(const ColonValue &value) {
     m_value = value;
 }
 }  // namespace BMCPP

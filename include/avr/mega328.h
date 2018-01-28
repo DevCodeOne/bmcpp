@@ -45,10 +45,37 @@ struct ATMega328 final {
     };
 
     struct I2C final {
+        enum Status : uint8_t {
+            tws4 = 1 << 7,
+            tws3 = 1 << 6,
+            tws2 = 1 << 5,
+            tws1 = 1 << 4,
+            tws0 = 1 << 3,
+            twps1 = 1 << 1,
+            twps0 = 1
+        };
+
+        enum Control : uint8_t {
+            twi_interrupt = 1 << 7,
+            twi_enable_ack = 1 << 6,
+            twi_start = 1 << 5,
+            twi_stop = 1 << 4,
+            twi_write_col = 1 << 3,
+            twi_en = 1 << 2,
+            twi_in_en = 1
+        };
+
         I2C() = delete;
 
-        template<size_t N>
+        template <size_t N>
         struct address;
+
+        DataRegister<I2C, ReadWrite, std::byte> bitrate_register;
+        ControlRegister<I2C, Status, std::byte> status_register;
+        // TODO different datatype
+        DataRegister<I2C, ReadWrite, std::byte> address_register;
+        DataRegister<I2C, ReadWrite, std::byte> data_register;
+        ControlRegister<I2C, Control, std::byte> control_register;
     };
 
     struct StatusRegister final {
@@ -73,7 +100,7 @@ struct ATMega328::Port::address<D> {
     inline static constexpr uintptr_t value = 0x29;
 };
 
-template<>
+template <>
 struct ATMega328::I2C::address<0> {
     inline static constexpr uintptr_t value = 0xB8;
 };

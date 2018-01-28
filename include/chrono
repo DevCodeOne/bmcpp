@@ -22,7 +22,7 @@
 #include <cstdint>
 
 namespace std {
-template <intmax_t Nom, intmax_t Denom>
+template <intmax_t Nom, intmax_t Denom = 1>
 struct ratio {
     static inline constexpr intmax_t nom = Nom;
     static inline constexpr intmax_t denom = Denom;
@@ -35,7 +35,7 @@ template <typename Rep, typename Period = ratio<1, 1>>
 struct duration {
     typedef Rep rep;
     typedef Period period;
-    const Rep value;
+    Rep value;
 };
 
 using milliseconds = duration<uint16_t, millis>;
