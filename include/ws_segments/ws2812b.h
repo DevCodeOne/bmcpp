@@ -11,14 +11,14 @@
 
 #include "pixel.h"
 
+// TODO this has to be a strip there has to be some kind of interface for other
+// classes
+namespace BMCPP {
 template <typename T>
 constexpr T clamp_bottom(T value, T min) {
     return value < min ? min : value;
 }
 
-// TODO this has to be a strip there has to be some kind of interface for other
-// classes
-namespace BMCPP {
 template <typename Pin, size_t NumLeds>
 class WS2812B final {
    public:

@@ -78,6 +78,55 @@ struct ATMega328 final {
         ControlRegister<I2C, Control, std::byte> control_register;
     };
 
+    struct ADC final {
+        enum ControlA {
+            adc_enable = 1 << 7,
+            adc_start_conv = 1 << 6,
+            adc_auto_trigger = 1 << 5,
+            adc_interrupt = 1 << 4,
+            adc_in_en = 1 << 3,
+            adc_pres_two = 1 << 2,
+            adc_pres_one = 1 << 1,
+            adc_pres_zero = 1
+        };
+
+        enum ControlB {
+            adc_analog_cmp = 1 << 6,
+            adc_auto_trigger_two = 1 << 2,
+            adc_auto_trigger_one = 1 << 1,
+            adc_auto_trigger_zero = 1
+        };
+
+        enum Mux {
+            adc_ref_sel_one = 1 << 7,
+            adc_ref_sel_zero = 1 << 6,
+            adc_left_adj = 1 << 5,
+            adc_analog_sel_three = 1 << 3,
+            adc_analog_sel_two = 1 << 2,
+            adc_analog_sel_one = 1 << 1,
+            adc_analog_sel_zero = 1,
+        };
+
+        template <size_t N>
+        struct address;
+
+        template <typename Pin>
+        struct Channel {
+            static_assert(
+                std::is_same<typename Pin::port_type::portname_type, C>::value);
+            static_assert(Pin::number >= 0 && Pin::number <= 5);
+
+            static inline constexpr uint8_t channel = Pin::number;
+        };
+
+        DataRegister<ADC, ReadWrite, std::byte> value_low_register;
+        DataRegister<ADC, ReadWrite, std::byte, std::byte(0x3)>
+            value_high_register;
+        ControlRegister<ADC, ControlA, std::byte> control_status_registera;
+        ControlRegister<ADC, ControlB, std::byte> control_status_registerb;
+        ControlRegister<ADC, Mux, std::byte> multiplexer_sel_register;
+    };
+
     struct StatusRegister final {
         enum BitType : uint8_t { globalInterrupt = 1 << 7 };
 
@@ -103,6 +152,11 @@ struct ATMega328::Port::address<D> {
 template <>
 struct ATMega328::I2C::address<0> {
     inline static constexpr uintptr_t value = 0xB8;
+};
+
+template <>
+struct ATMega328::ADC::address<0> {
+    inline static constexpr uintptr_t value = 0x78;
 };
 
 template <typename Component, uint8_t N>

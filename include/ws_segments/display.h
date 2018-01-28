@@ -5,6 +5,7 @@
 #include "segment.h"
 #include "ws2812b.h"
 
+namespace BMCPP {
 template <typename Segment, typename... Segments>
 constexpr size_t calculate_strip_length() {
     if constexpr (sizeof...(Segments) > 0) {
@@ -14,7 +15,6 @@ constexpr size_t calculate_strip_length() {
     }
 }
 
-namespace BMCPP {
 template <typename Pin, typename... Segments>
 class Display {
    public:

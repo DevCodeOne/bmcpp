@@ -5,17 +5,19 @@
 
 #include <util/twi.h>
 
+#include "avr/mega328.h"
+
 namespace BMCPP {
 namespace Hal {
 
 struct Slave {};
 struct Master {};
 
-template <typename Mode = Master, size_t N = 0>
+template <typename Mode = Master, uint8_t N = 0>
 class I2C;
 
 // TODO new type for address
-template <size_t N>
+template <uint8_t N>
 class I2C<Master, N> {
    public:
     using i2c_type = BMCPP::AVR::ATMega328::I2C;
@@ -51,7 +53,7 @@ class I2C<Master, N> {
         std::byte(((cpu_freq / twi_clock_frequency) - 16) / 2);
 };
 
-template <size_t N>
+template <uint8_t N>
 I2C<Master, N>::I2C() {
     if (!m_initialized) {
         *i2c()->bitrate_register = twi_bitrate;
@@ -59,7 +61,7 @@ I2C<Master, N>::I2C() {
     }
 }
 
-template <size_t N>
+template <uint8_t N>
 template <typename Mode>
 bool I2C<Master, N>::start(std::byte address) {
     static_assert(std::is_same<Mode, Write>::value ||
@@ -86,7 +88,7 @@ bool I2C<Master, N>::start(std::byte address) {
     return (twst != TW_MT_SLA_ACK) && (twst != TW_MR_SLA_ACK);
 }
 
-template <size_t N>
+template <uint8_t N>
 bool I2C<Master, N>::write(const std::byte &address, const std::byte &data) {
     start<Write>(address);
     *i2c()->data_register = data;
@@ -95,7 +97,7 @@ bool I2C<Master, N>::write(const std::byte &address, const std::byte &data) {
     return ret;
 }
 
-template <size_t N>
+template <uint8_t N>
 template <size_t Size>
 bool I2C<Master, N>::write(const std::byte &address,
                            const std::array<std::byte, Size> &data) {
@@ -111,7 +113,7 @@ bool I2C<Master, N>::write(const std::byte &address,
     return ret;
 }
 
-template <size_t N>
+template <uint8_t N>
 template <size_t Size>
 void I2C<Master, N>::read(const std::byte &address,
                           std::array<std::byte, Size> &data) {
@@ -128,7 +130,7 @@ void I2C<Master, N>::read(const std::byte &address,
     stop();
 }
 
-template <size_t N>
+template <uint8_t N>
 std::byte I2C<Master, N>::read(const std::byte &address) {
     start<Read>(address);
     set_flags_and_wait(i2c_type::twi_interrupt, i2c_type::twi_en);
@@ -138,7 +140,7 @@ std::byte I2C<Master, N>::read(const std::byte &address) {
     return ret;
 }
 
-template <size_t N>
+template <uint8_t N>
 template <typename... Flags>
 bool I2C<Master, N>::set_flags_and_wait(Flags... flags) {
     i2c()->control_register.set(flags...);
@@ -148,7 +150,7 @@ bool I2C<Master, N>::set_flags_and_wait(Flags... flags) {
     return ((uint8_t)i2c()->status_register.raw() & 0xF8) != TW_MT_DATA_ACK;
 }
 
-template <size_t N>
+template <uint8_t N>
 void I2C<Master, N>::stop() {
     i2c()->control_register.set(i2c_type::twi_interrupt, i2c_type::twi_en,
                                 i2c_type::twi_stop);

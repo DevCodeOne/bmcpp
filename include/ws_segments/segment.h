@@ -11,14 +11,34 @@ namespace BMCPP {
 
 class Digit {
    public:
-    inline constexpr explicit Digit(uint8_t number) : m_number(number) {}
+    inline constexpr explicit Digit(uint8_t number = 0,
+                                    Pixel color = {std::byte(200),
+                                                   std::byte(255)})
+        : m_number(number), m_color(color) {}
     inline constexpr uint8_t number() const { return m_number; }
+    inline constexpr const Pixel &color() const { return m_color; }
 
    private:
     uint8_t m_number;
+    Pixel m_color;
 };
 
-enum struct ColonValue { Off, One, Two };
+enum struct DotsValue { Off, One, Two };
+
+class Dots {
+   public:
+    inline constexpr explicit Dots(DotsValue value = DotsValue::Off,
+                                         Pixel color = {std::byte(200),
+                                                        std::byte(255)})
+        : m_value(value), m_color(color) {}
+
+    inline constexpr DotsValue value() const { return m_value; }
+    inline constexpr const Pixel &color() const { return m_color; }
+
+   private:
+    DotsValue m_value;
+    Pixel m_color;
+};
 
 bool operator==(const Digit &lhs, const uint8_t &rhs) {
     return lhs.number() == rhs;
@@ -65,10 +85,10 @@ class Segment<2, Leds_Per_Segment> {
 
     template <size_t Size>
     size_t draw_digit(std::array<Pixel, Size> &data, size_t offset) const;
-    void set(const ColonValue &value);
+    void set(const Dots &value);
 
    private:
-    ColonValue m_value;
+    Dots m_value;
 };
 
 template <uint8_t Leds_Per_Segment>
@@ -101,9 +121,9 @@ size_t Segment<7, Leds_Per_Segment>::draw_digit(std::array<Pixel, Size> &data,
 
             for (size_t led = begin_segment; led < end_segment; ++led) {
                 using namespace std::literals;
-                data[led].red = 0_byte;
-                data[led].green = 255_byte;
-                data[led].blue = 175_byte;
+                data[led].red = m_current_digit.color().red;
+                data[led].green = m_current_digit.color().green;
+                data[led].blue = m_current_digit.color().blue;
             }
         }
 
@@ -132,7 +152,7 @@ size_t Segment<2, Leds_Per_Segment>::draw_digit(std::array<Pixel, Size> &data,
         data[i].blue = 0_byte;
     }
 
-    uint8_t digit_bitmap = dots[(unsigned int)m_value];
+    uint8_t digit_bitmap = dots[(unsigned int)m_value.value()];
 
     for (uint8_t dot = 0; dot < 2; ++dot) {
         if (digit_bitmap & 1) {
@@ -142,9 +162,9 @@ size_t Segment<2, Leds_Per_Segment>::draw_digit(std::array<Pixel, Size> &data,
 
             for (size_t led = begin_segment; led < end_segment; ++led) {
                 using namespace std::literals;
-                data[led].red = 0_byte;
-                data[led].green = 255_byte;
-                data[led].blue = 175_byte;
+                data[led].red = m_value.color().red;
+                data[led].green = m_value.color().green;
+                data[led].blue = m_value.color().blue;
             }
         }
 
@@ -155,7 +175,7 @@ size_t Segment<2, Leds_Per_Segment>::draw_digit(std::array<Pixel, Size> &data,
 }
 
 template <uint8_t Leds_Per_Segment>
-void Segment<2, Leds_Per_Segment>::set(const ColonValue &value) {
+void Segment<2, Leds_Per_Segment>::set(const Dots &value) {
     m_value = value;
 }
 }  // namespace BMCPP
