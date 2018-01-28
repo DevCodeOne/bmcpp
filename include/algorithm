@@ -9,4 +9,19 @@ constexpr typename std::remove_reference<T>::type &&move(T &&t) noexcept {
     return static_cast<typename std::remove_reference<T>::type &&>(t);
 }
 
+template <typename T>
+constexpr T min(const T &lhs, const T &rhs) {
+    return lhs < rhs ? lhs : rhs;
+}
+
+template <typename T>
+constexpr T max(const T &lhs, const T &rhs) {
+    return lhs < rhs ? rhs : lhs;
+}
+
+template <typename T>
+constexpr T clamp(const T &value, const T &lo, const T &hi) {
+    return max(min(value, hi), lo);
+}
+
 }  // namespace std
