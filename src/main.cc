@@ -14,7 +14,7 @@ using LedPin = Pin<Port<BMCPP::AVR::B>, 2>;
 using AnalogPin = Pin<Port<BMCPP::AVR::C>, 1>;
 
 BMCPP::Pixel calc_brightness(uint8_t sector) {
-    sector = std::clamp(sector, (uint8_t)0, (uint8_t)20);
+    sector = std::clamp(sector, (uint8_t)1, (uint8_t)20);
     return BMCPP::Pixel{std::byte(sector * 10), std::byte(sector * 3),
                         std::byte(sector * 10)};
 }
